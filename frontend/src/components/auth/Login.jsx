@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [stage, setStage] = useState('check-email');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,20 +29,6 @@ const Login = () => {
     }
   };
 
-  const checkEmail = async (email) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/check-email', { email });
-      if (!response.data.exists) {
-        setEmailError('Email not registered');
-        return false;
-      }
-      return true;
-    } catch (error) {
-      console.error('Email check error:', error);
-      return true; // Don't block login attempt if check fails
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -49,16 +36,23 @@ const Login = () => {
     setPasswordError('');
     setLoading(true);
 
-    try {
-      // Check if email exists first
-      const emailExists = await checkEmail(formData.email);
-      if (!emailExists) {
+    if (stage === 'check-email') {
+      try {
+        const response = await api.post('/auth/check-email', { email: formData.email });
+        if (response.data.exists) {
+          setStage('login');
+        } else {
+          setEmailError('Email not registered');
+        }
+      } catch (error) {
+        console.error('Email check error:', error);
+        setStage('login'); // Don't block login attempt if check fails
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Login request
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+    } else if (stage === 'login') {
+      try {
+        const response = await api.post('/auth/login', {
         email: formData.email,
         password: formData.password
       });
@@ -95,6 +89,7 @@ const Login = () => {
       }
     } finally {
       setLoading(false);
+      }
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 
 const AddVenue = () => {
   const navigate = useNavigate();
@@ -22,11 +22,7 @@ const AddVenue = () => {
     setError('');
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/venues', form, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      await api.post('/venues', form);
       navigate('/dashboard/venue_owner');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add venue');

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import api from '../../api';
 
 const UsernameModal = ({ isOpen, onClose, role, onSuccess }) => {
   const [username, setUsername] = useState('');
@@ -20,59 +20,32 @@ const UsernameModal = ({ isOpen, onClose, role, onSuccess }) => {
     return null;
   };
 
-  const checkUsernameAvailability = async (username) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/auth/check-username', { username });
-      return !response.data.exists;
-    } catch (error) {
-      console.error('Username check error:', error);
-      return true; // Don't block if check fails
+  const checkUsername = async (value) => {
+    if (value.length > 2) {
+      try {
+        const response = await api.post('/auth/check-username', { username: value });
+        if (response.data.exists) {
+          setError('Username is already taken.');
+        }
+      } catch (error) {
+        console.error('Error checking username:', error);
+      }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    if (error) return;
     setLoading(true);
-
-    // Validate username format
-    const validationError = validateUsername(username);
-    if (validationError) {
-      setError(validationError);
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Check username availability
-      setIsChecking(true);
-      const isAvailable = await checkUsernameAvailability(username);
-      setIsChecking(false);
-
-      if (!isAvailable) {
-        setError('This username is already taken');
-        setLoading(false);
-        return;
-      }
-
-      // Add the role with username
-      await axios.post('http://localhost:5000/api/users/types', {
+      await api.post('/users/types', {
         type: role,
         username,
-        isPrimary: true // Set as primary role
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
       });
-
       onSuccess();
     } catch (err) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Failed to set username. Please try again.');
-      }
+      console.error('Error setting username:', err);
+      setError(err.response?.data?.message || 'An error occurred.');
     } finally {
       setLoading(false);
     }

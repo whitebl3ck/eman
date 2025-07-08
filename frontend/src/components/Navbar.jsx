@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api';
 import UsernameModal from './auth/UsernameModal';
 
 const Navbar = () => {
@@ -46,11 +46,7 @@ const Navbar = () => {
 
   const fetchUserTypes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/users/types', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.get('/users/types');
       console.log('User types response:', response.data);
       setUserTypes(response.data.userTypes || []);
       const primaryType = response.data.userTypes?.find(type => type.isPrimary)?.type;
@@ -75,14 +71,7 @@ const Navbar = () => {
 
   const handleRoleSwitch = async (type) => {
     try {
-      await axios.put('http://localhost:5000/api/users/types/primary', 
-        { type },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
-      );
+      await api.put('/users/types/primary', { type });
       setCurrentType(type);
       navigate(`/dashboard/${type}`);
     } catch (error) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../api';
 
 const AddVenueModal = ({ isOpen, onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -26,12 +26,7 @@ const AddVenueModal = ({ isOpen, onClose, onSuccess }) => {
       // Log the form data for debugging
       console.log('Submitting venue data:', form);
       
-      const response = await axios.post('http://localhost:5000/api/venues', form, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await api.post('/venues', form);
       
       console.log('Venue created successfully:', response.data);
       if (onSuccess) onSuccess();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
+// import Navbar from './Navbar';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      {/* <Navbar /> */}
       
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-emerald-900 via-emerald-700 to-emerald-800 text-white min-h-screen flex items-center justify-center relative overflow-hidden pt-16">

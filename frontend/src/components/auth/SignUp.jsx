@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api';
 import UsernameModal from './UsernameModal';
+
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -10,7 +11,9 @@ const SignUp = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'customer',
+    username: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,7 +22,7 @@ const SignUp = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
-  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedRole, setSelectedRole] = useState('customer');
   const [modalLoading, setModalLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -40,7 +43,7 @@ const SignUp = () => {
 
   const checkEmail = async (email) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/check-email', { email });
+      const response = await api.post('/auth/check-email', { email });
       if (response.data.exists) {
         setEmailError('Email already registered');
         return false;
@@ -83,14 +86,17 @@ const SignUp = () => {
       }
 
       // Signup request
-      const response = await axios.post('http://localhost:5000/api/auth/signup', {
+      const response = await api.post('/auth/signup', {
         name: formData.name,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        userType: formData.role,
+        username: formData.username
       });
 
       // Store the token
       localStorage.setItem('token', response.data.token);
+      window.dispatchEvent(new Event('authChanged'));
       
       // Show user type selection modal
       setShowUserTypeModal(true);
