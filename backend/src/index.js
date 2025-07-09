@@ -10,7 +10,10 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://eman-frontend.onrender.com',
+  credentials: true,
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 
