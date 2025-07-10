@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import HomePage from './components/HomePage';
@@ -28,6 +28,9 @@ function AppRoutes() {
   const [selectedRole, setSelectedRole] = useState('');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const publicRoutes = ['/', '/login', '/signup'];
+  const isPublicRoute = publicRoutes.includes(location.pathname);
 
   useEffect(() => {
     const handleAuthChange = () => {
@@ -104,12 +107,28 @@ function AppRoutes() {
 
   return (
     <div className="min-h-screen">
-      {isAuthenticated ? <Sidebar userType={userType} onSwitchRole={handleSwitchRole} onLogout={handleLogout} /> : <Navbar />}
-      <div className={isAuthenticated ? 'pl-24 min-h-screen' : 'min-h-screen'}>
+      {isPublicRoute ? (
+        <Navbar />
+      ) : (
+        isAuthenticated && <Sidebar userType={userType} onSwitchRole={handleSwitchRole} onLogout={handleLogout} />
+      )}
+      <div className={isAuthenticated && !isPublicRoute ? 'pl-24 min-h-screen' : 'min-h-screen'}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
+          <Route path="/" element={
+            isAuthenticated
+              ? <Navigate to={userType ? `/dashboard/${userType}` : "/dashboard/customer"} replace />
+              : <HomePage />
+          } />
+          <Route path="/login" element={
+            isAuthenticated
+              ? <Navigate to={userType ? `/dashboard/${userType}` : "/dashboard/customer"} replace />
+              : <Login />
+          } />
+          <Route path="/signup" element={
+            isAuthenticated
+              ? <Navigate to={userType ? `/dashboard/${userType}` : "/dashboard/customer"} replace />
+              : <SignUp />
+          } />
           <Route
             path="/dashboard/customer"
             element={
